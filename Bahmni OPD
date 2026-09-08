@@ -1,0 +1,1089 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bahmni OPD • Triage • Emergency</title>
+    
+    <style>
+        :root {
+            --primary: #087f5b;
+            --primary-dark: #173f35;
+            --primary-hover: #24584b;
+            --bg-color: #f4f6f8;
+            --text-color: #202124;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --success: #198754;
+            --dark: #111;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.5s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Header */
+        .topbar {
+            background: var(--primary);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            transition: background-color 0.5s ease;
+        }
+
+        .topbar h1 {
+            font-size: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .topbar p {
+            margin-top: 5px;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .user {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 75px);
+        }
+
+        .sidebar {
+            width: 240px;
+            background: var(--primary-dark);
+            padding: 20px 15px;
+            transition: background-color 0.5s ease;
+        }
+
+        .sidebar button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            border: 0;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 15px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .sidebar button:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar button.active-tab {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            opacity: 0;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        h2 {
+            margin-bottom: 24px;
+            color: #2c3e50;
+            font-size: 26px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-left: 5px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .card span {
+            font-size: 32px;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            opacity: 0.2;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #7f8c8d;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .card strong {
+            display: block;
+            margin-top: 12px;
+            font-size: 36px;
+            color: var(--primary);
+            transition: color 0.5s ease;
+        }
+
+        .card.danger {
+            border-left-color: var(--danger);
+        }
+        .card.danger strong {
+            color: var(--danger);
+        }
+        .card.danger:hover strong {
+            animation: pulse 1s infinite;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .panel:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: #34495e;
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dcdde1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: var(--transition);
+            background: #fdfdfd;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(8, 127, 91, 0.15);
+            background: white;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button.primary, button.secondary, button.danger-btn {
+            border: 0;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .primary { background: var(--primary); }
+        .primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(8, 127, 91, 0.3); }
+
+        .secondary { background: #555; }
+        .secondary:hover { background: #333; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
+
+        .danger-btn { background: var(--danger); }
+        .danger-btn:hover { background: #c82333; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3); }
+
+        .sub-title {
+            margin: 25px 0 15px;
+            font-size: 18px;
+            color: var(--primary-dark);
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+            border: 1px solid #eef0f2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th, td {
+            border-bottom: 1px solid #eef0f2;
+            padding: 14px 15px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        tr { transition: background-color 0.2s; }
+        tr:hover { background: #f1f3f5; }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .red { background: var(--danger); color: white; }
+        .yellow { background: var(--warning); color: #111; }
+        .green { background: var(--success); color: white; }
+        .black { background: var(--dark); color: white; }
+
+        .storage-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .toolbar-row input {
+            max-width: 350px;
+            margin-top: 0;
+            border-radius: 20px;
+            padding: 10px 20px;
+        }
+
+        @media(max-width: 768px) {
+            .topbar { flex-direction: column; gap: 15px; text-align: center; }
+            .layout { flex-direction: column; }
+            .sidebar { width: 100%; display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; }
+            .sidebar button { flex: 1 1 45%; margin-bottom: 0; justify-content: center; }
+            .main { padding: 15px; }
+            .card span { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div>
+        <h1>🏥 Bahmni Health System</h1>
+        <p>OPD • Triage • Emergency Triage Integration</p>
+    </div>
+    <div class="user">
+        👨‍⚕️ OPD / ER Staff 
+        <button id="changeColorButton" class="theme-btn">🎨 Theme</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar">
+        <button onclick="showPage('dashboard', this)" class="active-tab">📊 Dashboard</button>
+        <button onclick="showPage('opd', this)">🏥 1. OPD</button>
+        <button onclick="showPage('triage', this)">🩺 2. Triage</button>
+        <button onclick="showPage('emergency', this)">🚑 3. Emergency Triage</button>
+        <button onclick="showPage('storage', this)">💾 5. Data Storage</button>
+    </aside>
+
+    <main class="main">
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="page active">
+            <h2>📊 Dashboard Overview</h2>
+            <div class="cards">
+                <div class="card">
+                    <span>👥</span>
+                    <h3>Total Patients</h3>
+                    <strong id="totalPatients">0</strong>
+                </div>
+                <div class="card">
+                    <span>🏥</span>
+                    <h3>OPD Registered</h3>
+                    <strong id="totalOPD">0</strong>
+                </div>
+                <div class="card">
+                    <span>🩺</span>
+                    <h3>Triage Queue</h3>
+                    <strong id="totalTriage">0</strong>
+                </div>
+                <div class="card">
+                    <span>🚑</span>
+                    <h3>Emergency Queue</h3>
+                    <strong id="totalEmergency">0</strong>
+                </div>
+                <div class="card danger">
+                    <span>🔴</span>
+                    <h3>Critical (Red)</h3>
+                    <strong id="totalCritical">0</strong>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>System Information</h3>
+                <p style="margin-top: 12px; line-height: 1.6; color: #555;">
+                    Welcome to the animated, single-file Bahmni application. This system provides streamlined OPD registration, routine Triage vital signs recording, and advanced Emergency Triage prioritization (ABC assessment & GCS). Data is safely stored locally in your browser using <code>localStorage</code>.
+                </p>
+            </div>
+        </section>
+
+        <!-- 1 OPD -->
+        <section id="opd" class="page">
+            <h2>🏥 1. OPD Registration</h2>
+            <div class="panel">
+                <div class="form-grid">
+                    <div>
+                        <label>Patient ID</label>
+                        <input id="opdPatientId" placeholder="OPD-001 (Auto-generated if blank)">
+                    </div>
+                    <div>
+                        <label>First Name *</label>
+                        <input id="opdFirstName" placeholder="Enter first name">
+                    </div>
+                    <div>
+                        <label>Last Name *</label>
+                        <input id="opdLastName" placeholder="Enter last name">
+                    </div>
+                    <div>
+                        <label>Age</label>
+                        <input id="opdAge" type="number" placeholder="Years">
+                    </div>
+                    <div>
+                        <label>Sex</label>
+                        <select id="opdSex">
+                            <option value="">Select gender</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Phone</label>
+                        <input id="opdPhone" placeholder="Phone number">
+                    </div>
+                </div>
+                <label>Chief Complaint</label>
+                <textarea id="opdComplaint" placeholder="Describe symptoms or reason for visit..."></textarea>
+                <button class="primary" onclick="registerOPD()">➕ Register Patient</button>
+            </div>
+
+            <div class="panel">
+                <div class="toolbar-row">
+                    <h3 style="margin:0;">OPD Patient Directory</h3>
+                    <input id="opdSearch" placeholder="🔎 Search patient name or ID..." oninput="renderOPD()">
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Sex</th>
+                                <th>Phone</th>
+                                <th>Complaint</th>
+                                <th>Registration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="opdTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2 TRIAGE -->
+        <section id="triage" class="page">
+            <h2>🩺 2. Routine Triage</h2>
+            <div class="panel">
+                <div class="form-grid">
+                    <div>
+                        <label>Patient ID</label>
+                        <input id="triagePatientId" placeholder="TRI-001">
+                    </div>
+                    <div>
+                        <label>Patient Name *</label>
+                        <input id="triageName" placeholder="Full name">
+                    </div>
+                    <div>
+                        <label>Blood Pressure</label>
+                        <input id="triageBP" placeholder="e.g. 120/80">
+                    </div>
+                    <div>
+                        <label>Pulse / HR</label>
+                        <input id="triagePulse" type="number" placeholder="bpm">
+                    </div>
+                    <div>
+                        <label>Respiratory Rate</label>
+                        <input id="triageRR" type="number" placeholder="bpm">
+                    </div>
+                    <div>
+                        <label>SpO₂ (%)</label>
+                        <input id="triageSpO2" type="number" placeholder="%">
+                    </div>
+                    <div>
+                        <label>Temperature °C</label>
+                        <input id="triageTemp" type="number" step="0.1" placeholder="°C">
+                    </div>
+                    <div>
+                        <label>Triage Category</label>
+                        <select id="triageCategory">
+                            <option value="">Select priority level</option>
+                            <option value="red">🔴 RED - Immediate</option>
+                            <option value="yellow">🟡 YELLOW - Urgent</option>
+                            <option value="green">🟢 GREEN - Non-Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                <label>Assessment / Notes</label>
+                <textarea id="triageNotes" placeholder="Additional clinical observations..."></textarea>
+                <button class="primary" onclick="saveTriage()">💾 Save Triage Record</button>
+            </div>
+
+            <div class="panel">
+                <h3>Triage Queue</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient Name</th>
+                                <th>BP</th>
+                                <th>Pulse</th>
+                                <th>RR</th>
+                                <th>SpO₂</th>
+                                <th>Temp</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody id="triageTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3 EMERGENCY TRIAGE -->
+        <section id="emergency" class="page">
+            <h2>🚑 3. Emergency Triage (ER)</h2>
+            <div class="panel">
+                <div class="form-grid">
+                    <div>
+                        <label>Emergency ID</label>
+                        <input id="emPatientId" placeholder="EM-001">
+                    </div>
+                    <div>
+                        <label>Patient Name *</label>
+                        <input id="emName" placeholder="Full name">
+                    </div>
+                    <div>
+                        <label>Age</label>
+                        <input id="emAge" type="number" placeholder="Years">
+                    </div>
+                    <div>
+                        <label>Sex</label>
+                        <select id="emSex">
+                            <option value="">Select</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Blood Pressure</label>
+                        <input id="emBP" placeholder="120/80">
+                    </div>
+                    <div>
+                        <label>Pulse / HR</label>
+                        <input id="emPulse" type="number" placeholder="bpm">
+                    </div>
+                    <div>
+                        <label>Respiratory Rate</label>
+                        <input id="emRR" type="number" placeholder="bpm">
+                    </div>
+                    <div>
+                        <label>SpO₂ (%)</label>
+                        <input id="emSpO2" type="number" placeholder="%">
+                    </div>
+                    <div>
+                        <label>Temperature °C</label>
+                        <input id="emTemp" type="number" step="0.1" placeholder="°C">
+                    </div>
+                    <div>
+                        <label>GCS Score (3-15)</label>
+                        <input id="emGCS" type="number" min="3" max="15" placeholder="15">
+                    </div>
+                    <div>
+                        <label>Emergency Priority</label>
+                        <select id="emPriority">
+                            <option value="">Select priority</option>
+                            <option value="red">🔴 RED - Immediate/Resuscitation</option>
+                            <option value="yellow">🟡 YELLOW - Urgent</option>
+                            <option value="green">🟢 GREEN - Non-Urgent</option>
+                            <option value="black">⚫ BLACK - Deceased/Expectant</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3 class="sub-title">ABC Assessment</h3>
+                <div class="form-grid">
+                    <div>
+                        <label>Airway</label>
+                        <select id="airway">
+                            <option value="Patent">Patent (Clear)</option>
+                            <option value="Compromised">Compromised</option>
+                            <option value="Obstructed">Obstructed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Breathing</label>
+                        <select id="breathing">
+                            <option value="Normal">Normal</option>
+                            <option value="Distressed">Distressed / Labored</option>
+                            <option value="Absent">Absent</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Circulation</label>
+                        <select id="circulation">
+                            <option value="Stable">Stable</option>
+                            <option value="Unstable">Unstable / Shock</option>
+                            <option value="No Pulse">No Pulse</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label>Emergency Trauma / Intervention Notes</label>
+                <textarea id="emNotes" placeholder="Enter trauma details, immediate interventions given..."></textarea>
+                <button class="primary" onclick="saveEmergency()">🚑 Admit Emergency Patient</button>
+            </div>
+
+            <div class="panel">
+                <h3>Active Emergency Queue (Auto-sorted by Priority)</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>GCS</th>
+                                <th>SpO₂</th>
+                                <th>Priority</th>
+                                <th>ABC Status</th>
+                                <th>Time Admitted</th>
+                            </tr>
+                        </thead>
+                        <tbody id="emergencyTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5 STORAGE -->
+        <section id="storage" class="page">
+            <h2>💾 5. Data Management</h2>
+            <div class="panel">
+                <h3>Local Browser Storage Control</h3>
+                <p style="margin-top: 12px; margin-bottom: 20px; color: #555; line-height: 1.5;">
+                    The application strictly stores OPD, Triage, and Emergency records securely inside this browser session using <code>localStorage</code>. No data is sent to external servers.
+                </p>
+                <div class="storage-buttons">
+                    <button class="primary" onclick="exportData()">📥 Export Data (JSON)</button>
+                    <button class="secondary" onclick="printData()">🖨️ Print Dashboard / Reports</button>
+                    <button class="danger-btn" onclick="clearAllData()">🗑️ Purge All System Data</button>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    // === 1. INITIALIZATION & STORAGE LOGIC ===
+    let opdPatients = JSON.parse(localStorage.getItem("bahmniOPD")) || [];
+    let triagePatients = JSON.parse(localStorage.getItem("bahmniTriage")) || [];
+    let emergencyPatients = JSON.parse(localStorage.getItem("bahmniEmergency")) || [];
+
+    function saveStorage() {
+        localStorage.setItem("bahmniOPD", JSON.stringify(opdPatients));
+        localStorage.setItem("bahmniTriage", JSON.stringify(triagePatients));
+        localStorage.setItem("bahmniEmergency", JSON.stringify(emergencyPatients));
+    }
+
+    // === 2. NAVIGATION & UI LOGIC ===
+    function showPage(pageId, btnElement) {
+        // Hide all pages
+        document.querySelectorAll(".page").forEach(p => {
+            p.classList.remove("active");
+        });
+        
+        // Show target page
+        const target = document.getElementById(pageId);
+        if (target) {
+            target.classList.add("active");
+        }
+
+        // Update sidebar active state
+        if (btnElement) {
+            document.querySelectorAll(".sidebar button").forEach(b => {
+                b.classList.remove("active-tab");
+            });
+            btnElement.classList.add("active-tab");
+        }
+    }
+
+    function updateDashboard() {
+        const total = opdPatients.length + triagePatients.length + emergencyPatients.length;
+        
+        const critical = triagePatients.filter(p => p.category === "red").length +
+                         emergencyPatients.filter(p => p.priority === "red").length;
+
+        // Animate numbers by briefly adding a class (optional logic, CSS handles scale on hover)
+        document.getElementById("totalPatients").textContent = total;
+        document.getElementById("totalOPD").textContent = opdPatients.length;
+        document.getElementById("totalTriage").textContent = triagePatients.length;
+        document.getElementById("totalEmergency").textContent = emergencyPatients.length;
+        document.getElementById("totalCritical").textContent = critical;
+    }
+
+    // === 3. OPD LOGIC ===
+    function registerOPD() {
+        const first = document.getElementById("opdFirstName").value.trim();
+        const last = document.getElementById("opdLastName").value.trim();
+
+        if (!first || !last) {
+            alert("First Name and Last Name are required.");
+            return;
+        }
+
+        const patient = {
+            id: document.getElementById("opdPatientId").value.trim() || "OPD-" + Math.floor(Math.random() * 10000),
+            firstName: first,
+            lastName: last,
+            age: document.getElementById("opdAge").value,
+            sex: document.getElementById("opdSex").value,
+            phone: document.getElementById("opdPhone").value,
+            complaint: document.getElementById("opdComplaint").value,
+            date: new Date().toLocaleString()
+        };
+
+        opdPatients.push(patient);
+        saveStorage();
+        clearOPDForm();
+        renderOPD();
+        updateDashboard();
+        
+        // Brief visual feedback
+        showToast("OPD Patient Registered Successfully!");
+    }
+
+    function clearOPDForm() {
+        document.getElementById("opdPatientId").value = "";
+        document.getElementById("opdFirstName").value = "";
+        document.getElementById("opdLastName").value = "";
+        document.getElementById("opdAge").value = "";
+        document.getElementById("opdSex").value = "";
+        document.getElementById("opdPhone").value = "";
+        document.getElementById("opdComplaint").value = "";
+    }
+
+    function renderOPD() {
+        const table = document.getElementById("opdTable");
+        const search = document.getElementById("opdSearch")?.value.toLowerCase() || "";
+        table.innerHTML = "";
+
+        const filtered = opdPatients.filter(p =>
+            `${p.firstName} ${p.lastName}`.toLowerCase().includes(search) ||
+            p.id.toLowerCase().includes(search)
+        );
+
+        if (filtered.length === 0) {
+            table.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#7f8c8d;">No OPD patients found.</td></tr>`;
+            return;
+        }
+
+        filtered.forEach(p => {
+            table.innerHTML += `
+                <tr>
+                    <td><strong>${p.id}</strong></td>
+                    <td>${p.firstName} ${p.lastName}</td>
+                    <td>${p.age || "-"}</td>
+                    <td>${p.sex || "-"}</td>
+                    <td>${p.phone || "-"}</td>
+                    <td>${p.complaint || "-"}</td>
+                    <td>${p.date}</td>
+                </tr>
+            `;
+        });
+    }
+
+    // === 4. TRIAGE LOGIC ===
+    function saveTriage() {
+        const name = document.getElementById("triageName").value.trim();
+        if (!name) {
+            alert("Patient name is required.");
+            return;
+        }
+
+        const patient = {
+            id: document.getElementById("triagePatientId").value.trim() || "TRI-" + Math.floor(Math.random() * 10000),
+            name: name,
+            bp: document.getElementById("triageBP").value,
+            pulse: document.getElementById("triagePulse").value,
+            rr: document.getElementById("triageRR").value,
+            spo2: document.getElementById("triageSpO2").value,
+            temp: document.getElementById("triageTemp").value,
+            category: document.getElementById("triageCategory").value,
+            notes: document.getElementById("triageNotes").value,
+            date: new Date().toLocaleString()
+        };
+
+        triagePatients.push(patient);
+        saveStorage();
+        clearTriageForm();
+        renderTriage();
+        updateDashboard();
+        showToast("Triage Record Saved!");
+    }
+
+    function clearTriageForm() {
+        document.getElementById("triagePatientId").value = "";
+        document.getElementById("triageName").value = "";
+        document.getElementById("triageBP").value = "";
+        document.getElementById("triagePulse").value = "";
+        document.getElementById("triageRR").value = "";
+        document.getElementById("triageSpO2").value = "";
+        document.getElementById("triageTemp").value = "";
+        document.getElementById("triageCategory").value = "";
+        document.getElementById("triageNotes").value = "";
+    }
+
+    function categoryBadge(category) {
+        if (category === "red") return `<span class="badge red">🔴 RED</span>`;
+        if (category === "yellow") return `<span class="badge yellow">🟡 YELLOW</span>`;
+        if (category === "green") return `<span class="badge green">🟢 GREEN</span>`;
+        return `<span class="badge" style="background:#eee;color:#333">Unassigned</span>`;
+    }
+
+    function renderTriage() {
+        const table = document.getElementById("triageTable");
+        table.innerHTML = "";
+
+        if (triagePatients.length === 0) {
+            table.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#7f8c8d;">No triage records found.</td></tr>`;
+            return;
+        }
+
+        triagePatients.forEach(p => {
+            table.innerHTML += `
+                <tr>
+                    <td><strong>${p.id}</strong></td>
+                    <td>${p.name}</td>
+                    <td>${p.bp || "-"}</td>
+                    <td>${p.pulse || "-"}</td>
+                    <td>${p.rr || "-"}</td>
+                    <td>${p.spo2 ? p.spo2 + '%' : "-"}</td>
+                    <td>${p.temp ? p.temp + '°C' : "-"}</td>
+                    <td>${categoryBadge(p.category)}</td>
+                </tr>
+            `;
+        });
+    }
+
+    // === 5. EMERGENCY LOGIC ===
+    function saveEmergency() {
+        const name = document.getElementById("emName").value.trim();
+        if (!name) {
+            alert("Emergency Patient name is required.");
+            return;
+        }
+
+        const patient = {
+            id: document.getElementById("emPatientId").value.trim() || "EM-" + Math.floor(Math.random() * 10000),
+            name: name,
+            age: document.getElementById("emAge").value,
+            sex: document.getElementById("emSex").value,
+            bp: document.getElementById("emBP").value,
+            pulse: document.getElementById("emPulse").value,
+            rr: document.getElementById("emRR").value,
+            spo2: document.getElementById("emSpO2").value,
+            temp: document.getElementById("emTemp").value,
+            gcs: document.getElementById("emGCS").value,
+            priority: document.getElementById("emPriority").value,
+            airway: document.getElementById("airway").value,
+            breathing: document.getElementById("breathing").value,
+            circulation: document.getElementById("circulation").value,
+            notes: document.getElementById("emNotes").value,
+            date: new Date().toLocaleTimeString() // Just time for fast ER flow
+        };
+
+        emergencyPatients.push(patient);
+        saveStorage();
+        clearEmergencyForm();
+        renderEmergency();
+        updateDashboard();
+        showToast("Emergency Patient Admitted!");
+    }
+
+    function priorityBadge(priority) {
+        if (priority === "red") return `<span class="badge red">🔴 RED</span>`;
+        if (priority === "yellow") return `<span class="badge yellow">🟡 YELLOW</span>`;
+        if (priority === "green") return `<span class="badge green">🟢 GREEN</span>`;
+        if (priority === "black") return `<span class="badge black">⚫ BLACK</span>`;
+        return `<span class="badge" style="background:#eee;color:#333">Unassigned</span>`;
+    }
+
+    function renderEmergency() {
+        const table = document.getElementById("emergencyTable");
+        table.innerHTML = "";
+
+        if (emergencyPatients.length === 0) {
+            table.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#7f8c8d;">Queue is empty.</td></tr>`;
+            return;
+        }
+
+        // Sort by priority (Red -> Yellow -> Green -> Black)
+        const sorted = [...emergencyPatients].sort((a, b) => {
+            const order = { red: 1, yellow: 2, green: 3, black: 4 };
+            return (order[a.priority] || 5) - (order[b.priority] || 5);
+        });
+
+        sorted.forEach(p => {
+            const abc = `A: ${p.airway} <br> B: ${p.breathing} <br> C: ${p.circulation}`;
+            table.innerHTML += `
+                <tr>
+                    <td><strong>${p.id}</strong></td>
+                    <td>${p.name}</td>
+                    <td>${p.age || "-"}</td>
+                    <td><strong>${p.gcs || "-"}</strong></td>
+                    <td>${p.spo2 ? p.spo2 + '%' : "-"}</td>
+                    <td>${priorityBadge(p.priority)}</td>
+                    <td style="font-size:12px; line-height:1.4;">${abc}</td>
+                    <td>${p.date}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function clearEmergencyForm() {
+        document.getElementById("emPatientId").value = "";
+        document.getElementById("emName").value = "";
+        document.getElementById("emAge").value = "";
+        document.getElementById("emBP").value = "";
+        document.getElementById("emPulse").value = "";
+        document.getElementById("emRR").value = "";
+        document.getElementById("emSpO2").value = "";
+        document.getElementById("emTemp").value = "";
+        document.getElementById("emGCS").value = "";
+        document.getElementById("emPriority").value = "";
+        document.getElementById("emNotes").value = "";
+        
+        // Reset ABC dropdowns to defaults
+        document.getElementById("airway").value = "Patent";
+        document.getElementById("breathing").value = "Normal";
+        document.getElementById("circulation").value = "Stable";
+    }
+
+    // === 6. UTILITIES (Export, Clear, Theme) ===
+    function exportData() {
+        const data = {
+            OPD: opdPatients,
+            Triage: triagePatients,
+            Emergency: emergencyPatients,
+            exportedAt: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "bahmni-export-" + Date.now() + ".json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    function clearAllData() {
+        const confirmDelete = confirm("⚠️ DANGER: Are you sure you want to delete ALL OPD, Triage, and Emergency data? This cannot be undone.");
+        if (!confirmDelete) return;
+
+        localStorage.removeItem("bahmniOPD");
+        localStorage.removeItem("bahmniTriage");
+        localStorage.removeItem("bahmniEmergency");
+        
+        opdPatients = [];
+        triagePatients = [];
+        emergencyPatients = [];
+        
+        renderOPD();
+        renderTriage();
+        renderEmergency();
+        updateDashboard();
+        alert("All system data has been purged.");
+    }
+
+    function printData() {
+        window.print();
+    }
+
+    // Custom Toast Notification (socho'aa alternative to alert)
+    function showToast(message) {
+        const toast = document.createElement("div");
+        toast.textContent = message;
+        toast.style.position = "fixed";
+        toast.style.bottom = "20px";
+        toast.style.right = "20px";
+        toast.style.background = "var(--primary)";
+        toast.style.color = "white";
+        toast.style.padding = "12px 24px";
+        toast.style.borderRadius = "8px";
+        toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+        toast.style.zIndex = "1000";
+        toast.style.animation = "fadeIn 0.3s ease";
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transform = "translateY(10px)";
+            toast.style.transition = "all 0.3s ease";
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Dynamic Theme Switcher (Modifies CSS variables instead of just background for better UX)
+    document.getElementById("changeColorButton").addEventListener("click", function() {
+        // Medical / Sophisticated color palettes
+        const themes = [
+            { primary: "#087f5b", dark: "#173f35", hover: "#24584b" }, // Teal/Green (Default)
+            { primary: "#1d3557", dark: "#101e33", hover: "#457b9d" }, // Navy Blue
+            { primary: "#6a0572", dark: "#3a033f", hover: "#ab009e" }, // Purple
+            { primary: "#b71c1c", dark: "#7f0000", hover: "#d32f2f" }, // Crimson
+            { primary: "#e67e22", dark: "#a04000", hover: "#d35400" }  // Orange
+        ];
+        
+        const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+        
+        document.documentElement.style.setProperty('--primary', randomTheme.primary);
+        document.documentElement.style.setProperty('--primary-dark', randomTheme.dark);
+        document.documentElement.style.setProperty('--primary-hover', randomTheme.hover);
+    });
+
+    // === 7. APP BOOTSTRAP ===
+    document.addEventListener("DOMContentLoaded", () => {
+        renderOPD();
+        renderTriage();
+        renderEmergency();
+        updateDashboard();
+    });
+</script>
+</body>
+</html>
+```
